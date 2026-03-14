@@ -1,1 +1,2 @@
 C:\Users\juana\Documents\GitHub\Compilador-Analizadores\Compilad.8B4091AC\x64\Debug\Compilador-Analizadores.vcxproj.AssemblyReference.cache
+C:\Users\almal\OneDrive\Documentos\GitHub\Compilador\Compilad.8B4091AC\x64\Debug\Compilador-Analizadores.vcxproj.AssemblyReference.cache

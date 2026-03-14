@@ -17,6 +17,7 @@ namespace CompiladorWinForms { // creamos el espacio de nombres para nuestro pro
 
     private:
 
+
         TextBox^ editor; // aqui escribiremos l codigo
 		TextBox^ salida; // aqui se mostrara el resultado del analisis lexico
 		Button^ analizar; // con este inicia el analizador lexico
