@@ -10,9 +10,8 @@ private:
     std::string input; // nuestro codigo fuente
     int pos; // posicion actual dentro del texto
 
-    char current(); // devolvera el caracter que se esta leyendo en el momento
-
 public:
+    std::vector<std::string> log; // se guardan los mensajes de error o informacion
 
     Lexer(std::string text); //constructor
 

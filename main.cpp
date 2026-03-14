@@ -13,6 +13,7 @@ int main(array<String^>^ args)
 
 	CompiladorWinForms::FormPrincipal form; // se crea la instancia del formulario principal
 
-	Application::Run(% form); // se ejecuta el formulario
+	Application::Run(gcnew CompiladorWinForms::FormPrincipal()); // se ejecuta el formulario principal
 
+	return 0;
 }

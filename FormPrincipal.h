@@ -75,8 +75,22 @@ namespace CompiladorWinForms { // creamos el espacio de nombres para nuestro pro
                 if (t.type == TokenType::END)
                     break;
 
-                salida->AppendText(gcnew String(t.value.c_str())); // mostramos el valor del token en la salida
+                std::string tipo = tokenTypeToString(t.type); 
+
+				// aqui se muestra el resultado del analisis lexico en la salida, mostrando el valor del token y su tipo
+                std::string linea = 
+                    "TOKEN: " + t.value +
+                    "  |  TIPO: " + tipo;
+
+                salida->AppendText(gcnew String(linea.c_str())); // mostramos el valor del token en la salida
 				salida->AppendText("\r\n"); // salto dr linea
+            }
+			salida->AppendText("\r\n--- PROCESO DEL ANALISIS ---\r\n"); // se muestra el proceso del analisis lexico, mostrando los mensajes que se guardaron en el log del lexer
+
+            for (auto& s : lexer.log) // se muestra cada mensaje del log en la salida
+            {
+                salida->AppendText(gcnew String(s.c_str())); // mostramos el mensaje
+                salida->AppendText("\r\n"); // salto de linea
             }
         }
     };

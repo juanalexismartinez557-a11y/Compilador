@@ -8,22 +8,14 @@ Lexer::Lexer(std::string text) { // constructor
 
 }
 
-char Lexer::current() { // devuelve el caracter actual del texto
-
-    if (pos >= input.length())
-        return '\0'; // esto es para cuando acabe de revisar todo
-
-    return input[pos];
-
-}
-
 Token Lexer::getNextToken() { // aqui se bisca el token que va a seguir 
 
     while (pos < input.length()) { // basicamente buscamos hasta que termine de revisar el texto
 
-        char c = current(); // guardamos el caracter 
+		char c = input[pos]; // guardamos el caracter actual para revisarlo
 
         if (isspace(c)) { // aqui hace que se ignoren los espacion (parte importante del analizador lexico)
+			log.push_back("Espacio en blanco encontrado, se ignora."); // guardamos un mensaje de informacion en el log
             pos++; // hacemos que avance 
             continue;
         }
@@ -32,11 +24,11 @@ Token Lexer::getNextToken() { // aqui se bisca el token que va a seguir
 
             std::string number;
 
-            while (isdigit(current())) { // con este while hacemos que si hay varios digitos juntos los ponga dentro del mismo token
-                number += current(); // le asignamos el valor
+            while (isdigit(input[pos])) { // con este while hacemos que si hay varios digitos juntos los ponga dentro del mismo token
+                number += input[pos]; // le asignamos el valor
                 pos++;
             }
-
+			log.push_back("Número encontrado: " + number); // guardamos un mensaje 
             return { TokenType::NUMBER, number }; // lo metemos como NUMBER de los tipos de token que creamos
         }
 
@@ -44,10 +36,11 @@ Token Lexer::getNextToken() { // aqui se bisca el token que va a seguir
 
             std::string id; // el acumulador
 
-            while (isalnum(current())) { // lee letras y numeros
-                id += current();
+            while (isalnum(input[pos])) { // lee letras y numeros
+                id += input[pos];
                 pos++;
             }
+			log.push_back("Identificador encontrado: " + id); // guardamos un mensaje
 
             // aqui revisamos si son palabras reservadas (son las que ya registramos
             // por simplicidad solamente acepta si es todo mayuscula o todo minuscula
@@ -71,22 +64,22 @@ Token Lexer::getNextToken() { // aqui se bisca el token que va a seguir
 
 		case '<': // aqui revisamos si es < o <=
             pos++;
-            if (current() == '=') { pos++; return { TokenType::LESS_EQUAL,"<=" }; }
+            if (input[pos] == '=') { pos++; return { TokenType::LESS_EQUAL,"<=" }; }
             return { TokenType::LESS,"<" };
 
 		case '>': // rwevisamos si es > o >=
             pos++;
-            if (current() == '=') { pos++; return { TokenType::GREATER_EQUAL,">=" }; }
+            if (input[pos] == '=') { pos++; return { TokenType::GREATER_EQUAL,">=" }; }
             return { TokenType::GREATER,">" };
 
 		case '=': // revisamos si es = o ==
             pos++;
-            if (current() == '=') { pos++; return { TokenType::EQUAL_EQUAL,"==" }; }
+            if (input[pos] == '=') { pos++; return { TokenType::EQUAL_EQUAL,"==" }; }
             break;
 
 		case '!': // revisamos si es ! o !=
             pos++;
-            if (current() == '=') { pos++; return { TokenType::NOT_EQUAL,"!=" }; }
+            if (input[pos] == '=') { pos++; return { TokenType::NOT_EQUAL,"!=" }; }
             return { TokenType::EXCLAMATION,"!" };
 
 		case ';': pos++; return { TokenType::SEMICOLON,";" }; // fin de linea
@@ -97,6 +90,7 @@ Token Lexer::getNextToken() { // aqui se bisca el token que va a seguir
         case '?': pos++; return { TokenType::QUESTION,"?" };
 
 		default: // si no es nada de lo que reconocemos, simplemente lo ignoramos y avanzamos
+			log.push_back(std::string("Carácter desconocido encontrado: '") + c + "'. Se ignora."); // guardamos un mensaje de error
             pos++;
             break;
         }
