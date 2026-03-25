@@ -82,6 +82,7 @@ Token Lexer::getNextToken()
             if (id == "inicio" || id == "INICIO") return Token{ TK_INICIO, id };
             if (id == "mostrar" || id == "MOSTRAR") return Token{ TK_MOSTRAR, id };
             if (id == "leer" || id == "LEER") return Token{ TK_LEER, id };
+            if (id == "print" || id == "PRINT") return Token{ TK_PRINT, id };
 
             return Token{ TK_IDENTIFIER, id };
         }

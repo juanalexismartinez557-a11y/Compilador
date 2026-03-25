@@ -28,6 +28,7 @@ enum TokenType
     TK_INICIO,
     TK_MOSTRAR,
     TK_LEER,
+    TK_PRINT,
 
     // identificadores y literales
     TK_IDENTIFIER,
@@ -111,6 +112,7 @@ inline std::string tokenTypeToString(TokenType type)
     case TK_INICIO: return "INICIO";
     case TK_MOSTRAR: return "MOSTRAR";
     case TK_LEER: return "LEER";
+    case TK_PRINT: return "PRINT";
 
     case TK_IDENTIFIER: return "IDENTIFIER";
     case TK_NUMBER: return "NUMBER";
