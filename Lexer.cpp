@@ -1,101 +1,206 @@
 #include "Lexer.h"
-#include <cctype> // nos permite analizar caracteres.
+#include <cctype>
 
-Lexer::Lexer(std::string text) { // constructor
-
+Lexer::Lexer(std::string text)
+{
     input = text;
     pos = 0;
-
 }
 
-Token Lexer::getNextToken() { // aqui se bisca el token que va a seguir 
+Token Lexer::getNextToken()
+{
+    while (pos < (int)input.length())
+    {
+        char c = input[pos];
 
-    while (pos < input.length()) { // basicamente buscamos hasta que termine de revisar el texto
-
-		char c = input[pos]; // guardamos el caracter actual para revisarlo
-
-        if (isspace(c)) { // aqui hace que se ignoren los espacion (parte importante del analizador lexico)
-			log.push_back("Espacio en blanco encontrado, se ignora."); // guardamos un mensaje de informacion en el log
-            pos++; // hacemos que avance 
+        if (isspace((unsigned char)c))
+        {
+            log.push_back("Espacio en blanco encontrado, se ignora.");
+            pos++;
             continue;
         }
 
-        if (isdigit(c)) { // aqui revisamos si el caracter es un numero
-
+        if (isdigit((unsigned char)c))
+        {
             std::string number;
+            bool hasDot = false;
 
-            while (isdigit(input[pos])) { // con este while hacemos que si hay varios digitos juntos los ponga dentro del mismo token
-                number += input[pos]; // le asignamos el valor
-                pos++;
+            while (pos < (int)input.length())
+            {
+                if (isdigit((unsigned char)input[pos]))
+                {
+                    number += input[pos];
+                    pos++;
+                }
+                else if (input[pos] == '.' && !hasDot)
+                {
+                    hasDot = true;
+                    number += input[pos];
+                    pos++;
+                }
+                else
+                {
+                    break;
+                }
             }
-			log.push_back("Número encontrado: " + number); // guardamos un mensaje 
-            return { TokenType::NUMBER, number }; // lo metemos como NUMBER de los tipos de token que creamos
+
+            log.push_back("Número encontrado: " + number);
+            return Token{ TK_NUMBER, number };
         }
 
-        if (isalpha(c)) { //  con esto revisamos identificadores y palabras reservadad. Porque puede ser tanto una variable como una palabra reservada.
+        if (isalpha((unsigned char)c) || c == '_')
+        {
+            std::string id;
 
-            std::string id; // el acumulador
-
-            while (isalnum(input[pos])) { // lee letras y numeros
+            while (pos < (int)input.length() &&
+                (isalnum((unsigned char)input[pos]) || input[pos] == '_'))
+            {
                 id += input[pos];
                 pos++;
             }
-			log.push_back("Identificador encontrado: " + id); // guardamos un mensaje
 
-            // aqui revisamos si son palabras reservadas (son las que ya registramos
-            // por simplicidad solamente acepta si es todo mayuscula o todo minuscula
-            if (id == "int" || id == "INT") return {TokenType::INT, id};
-            if (id == "string" || id == "STRING") return {TokenType::STRING, id};
-            if (id == "if" || id == "IF") return {TokenType::IF, id};
-            if (id == "else" || id == "ELSE") return {TokenType::ELSE, id};
-            if (id == "for" || id == "FOR") return {TokenType::FOR, id};
+            log.push_back("Identificador o palabra reservada encontrada: " + id);
 
-            return { TokenType::IDENTIFIER, id };
+            if (id == "int" || id == "INT") return Token{ TK_INT, id };
+            if (id == "string" || id == "STRING") return Token{ TK_STRING, id };
+            if (id == "float" || id == "FLOAT") return Token{ TK_FLOAT, id };
+            if (id == "bool" || id == "BOOL") return Token{ TK_BOOL, id };
+            if (id == "double" || id == "DOUBLE") return Token{ TK_DOUBLE, id };
+            if (id == "char" || id == "CHAR") return Token{ TK_CHAR, id };
+            if (id == "long" || id == "LONG") return Token{ TK_LONG, id };
+            if (id == "void" || id == "VOID") return Token{ TK_VOID, id };
+
+            if (id == "entero" || id == "ENTERO") return Token{ TK_ENTERO, id };
+            if (id == "cadena" || id == "CADENA") return Token{ TK_CADENA, id };
+            if (id == "decimal" || id == "DECIMAL") return Token{ TK_DECIMAL, id };
+
+            if (id == "if" || id == "IF") return Token{ TK_IF, id };
+            if (id == "else" || id == "ELSE") return Token{ TK_ELSE, id };
+            if (id == "for" || id == "FOR") return Token{ TK_FOR, id };
+            if (id == "while" || id == "WHILE") return Token{ TK_WHILE, id };
+
+            if (id == "inicio" || id == "INICIO") return Token{ TK_INICIO, id };
+            if (id == "mostrar" || id == "MOSTRAR") return Token{ TK_MOSTRAR, id };
+            if (id == "leer" || id == "LEER") return Token{ TK_LEER, id };
+
+            return Token{ TK_IDENTIFIER, id };
         }
 
-		switch (c) { // revisa operadores y simbolos (basicamente lo que no es letra ni numero)
-        
-        // nuevamente revsamos los que agregamos en tokens
-        case '+': pos++; return { TokenType::PLUS, "+" };
-        case '-': pos++; return { TokenType::MINUS, "-" };
-        case '*': pos++; return { TokenType::MULT, "*" };
-        case '/': pos++; return { TokenType::DIV, "/" };
-        case '%': pos++; return { TokenType::MOD, "%" };
-
-		case '<': // aqui revisamos si es < o <=
+        if (c == '"')
+        {
             pos++;
-            if (input[pos] == '=') { pos++; return { TokenType::LESS_EQUAL,"<=" }; }
-            return { TokenType::LESS,"<" };
+            std::string str;
 
-		case '>': // rwevisamos si es > o >=
-            pos++;
-            if (input[pos] == '=') { pos++; return { TokenType::GREATER_EQUAL,">=" }; }
-            return { TokenType::GREATER,">" };
+            while (pos < (int)input.length() && input[pos] != '"')
+            {
+                str += input[pos];
+                pos++;
+            }
 
-		case '=': // revisamos si es = o ==
-            pos++;
-            if (input[pos] == '=') { pos++; return { TokenType::EQUAL_EQUAL,"==" }; }
-            break;
+            if (pos < (int)input.length() && input[pos] == '"')
+            {
+                pos++;
+                log.push_back("Cadena encontrada: " + str);
+                return Token{ TK_STRING_LITERAL, str };
+            }
 
-		case '!': // revisamos si es ! o !=
-            pos++;
-            if (input[pos] == '=') { pos++; return { TokenType::NOT_EQUAL,"!=" }; }
-            return { TokenType::EXCLAMATION,"!" };
-
-		case ';': pos++; return { TokenType::SEMICOLON,";" }; // fin de linea
-        
-				// simbolos que agregamos
-        case '#': pos++; return { TokenType::HASH,"#" };
-        case '$': pos++; return { TokenType::DOLLAR,"$" };
-        case '?': pos++; return { TokenType::QUESTION,"?" };
-
-		default: // si no es nada de lo que reconocemos, simplemente lo ignoramos y avanzamos
-			log.push_back(std::string("Carácter desconocido encontrado: '") + c + "'. Se ignora."); // guardamos un mensaje de error
-            pos++;
-            break;
+            log.push_back("Error: cadena no cerrada.");
+            return Token{ TK_UNKNOWN, str };
         }
 
+        if (c == '\'')
+        {
+            pos++;
+            std::string ch;
+
+            while (pos < (int)input.length() && input[pos] != '\'')
+            {
+                ch += input[pos];
+                pos++;
+            }
+
+            if (pos < (int)input.length() && input[pos] == '\'')
+            {
+                pos++;
+                if (ch.length() == 1)
+                {
+                    log.push_back("Carácter encontrado: " + ch);
+                    return Token{ TK_CHAR_LITERAL, ch };
+                }
+
+                log.push_back("Error: literal de carácter inválido: " + ch);
+                return Token{ TK_UNKNOWN, ch };
+            }
+
+            log.push_back("Error: carácter no cerrado.");
+            return Token{ TK_UNKNOWN, ch };
+        }
+
+        switch (c)
+        {
+        case '+': pos++; return Token{ TK_PLUS, "+" };
+        case '-': pos++; return Token{ TK_MINUS, "-" };
+        case '*': pos++; return Token{ TK_MULT, "*" };
+        case '/': pos++; return Token{ TK_DIV, "/" };
+        case '%': pos++; return Token{ TK_MOD, "%" };
+
+        case '<':
+            pos++;
+            if (pos < (int)input.length() && input[pos] == '=')
+            {
+                pos++;
+                return Token{ TK_LESS_EQUAL, "<=" };
+            }
+            return Token{ TK_LESS, "<" };
+
+        case '>':
+            pos++;
+            if (pos < (int)input.length() && input[pos] == '=')
+            {
+                pos++;
+                return Token{ TK_GREATER_EQUAL, ">=" };
+            }
+            return Token{ TK_GREATER, ">" };
+
+        case '=':
+            pos++;
+            if (pos < (int)input.length() && input[pos] == '=')
+            {
+                pos++;
+                return Token{ TK_EQUAL_EQUAL, "==" };
+            }
+            return Token{ TK_ASSIGN, "=" };
+
+        case '!':
+            pos++;
+            if (pos < (int)input.length() && input[pos] == '=')
+            {
+                pos++;
+                return Token{ TK_NOT_EQUAL, "!=" };
+            }
+            return Token{ TK_EXCLAMATION, "!" };
+
+        case ';': pos++; return Token{ TK_SEMICOLON, ";" };
+        case ',': pos++; return Token{ TK_COMMA, "," };
+        case '(': pos++; return Token{ TK_LPAREN, "(" };
+        case ')': pos++; return Token{ TK_RPAREN, ")" };
+        case '{': pos++; return Token{ TK_LBRACE, "{" };
+        case '}': pos++; return Token{ TK_RBRACE, "}" };
+        case '#': pos++; return Token{ TK_HASH, "#" };
+        case '$': pos++; return Token{ TK_DOLLAR, "$" };
+        case '?': pos++; return Token{ TK_QUESTION, "?" };
+        case '&': pos++; return Token{ TK_AMPERSAND, "&" };
+        case '@': pos++; return Token{ TK_AT, "@" };
+
+        default:
+        {
+            std::string unknown(1, c);
+            log.push_back("Token desconocido encontrado: " + unknown);
+            pos++;
+            return Token{ TK_UNKNOWN, unknown };
+        }
+        }
     }
 
-    return { TokenType::END,"" }; // con esto revisamos si ya revisamos todo
+    return Token{ TK_END_OF_FILE, "" };
 }

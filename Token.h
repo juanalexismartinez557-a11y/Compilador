@@ -1,86 +1,155 @@
 #pragma once
-#include <string> //con esta libreria almacenamos el texto del token
+#include <string>
 
-enum class TokenType { // creamos la clase token donde se encuentran todos los identificadores que estaran dentro de nuestro compilador
-    // tipos de dato
-    INT,
-    STRING,
-    //estructuras de control
-    IF,
-    ELSE,
-    FOR,
-    //identificadores
-    IDENTIFIER,
-    NUMBER,
-    STRING_LITERAL,
-    //aritmetica
-    PLUS,
-    MINUS,
-    MULT,
-    DIV,
-    MOD,
+enum TokenType
+{
+    // tipos de dato estándar
+    TK_INT,
+    TK_STRING,
+    TK_FLOAT,
+    TK_BOOL,
+    TK_DOUBLE,
+    TK_CHAR,
+    TK_LONG,
+    TK_VOID,
+
+    // tipos de dato personalizados
+    TK_ENTERO,
+    TK_CADENA,
+    TK_DECIMAL,
+
+    // estructuras de control
+    TK_IF,
+    TK_ELSE,
+    TK_FOR,
+    TK_WHILE,
+
+    // palabras reservadas creadas por ti
+    TK_INICIO,
+    TK_MOSTRAR,
+    TK_LEER,
+
+    // identificadores y literales
+    TK_IDENTIFIER,
+    TK_NUMBER,
+    TK_STRING_LITERAL,
+    TK_CHAR_LITERAL,
+
+    // operadores aritméticos
+    TK_PLUS,
+    TK_MINUS,
+    TK_MULT,
+    TK_DIV,
+    TK_MOD,
+
     // operadores relacionales
-    LESS, 
-    GREATER,
-    LESS_EQUAL,
-    GREATER_EQUAL,
-    // de igualdad
-    EQUAL_EQUAL,
-    NOT_EQUAL,
-    // fin de linea
-    SEMICOLON,
-    // simbolos
-    HASH, // #
-    DOLLAR, // $
-    EXCLAMATION, // !
-    QUESTION, // ?
-    INV_QUESTION, // ¿
-    INV_EXCLAMATION, // ¡
+    TK_LESS,
+    TK_GREATER,
+    TK_LESS_EQUAL,
+    TK_GREATER_EQUAL,
 
-    END // fin del programa
+    // operadores de igualdad
+    TK_EQUAL_EQUAL,
+    TK_NOT_EQUAL,
+
+    // asignación
+    TK_ASSIGN,
+
+    // separadores
+    TK_SEMICOLON,
+    TK_COMMA,
+
+    // agrupadores
+    TK_LPAREN,
+    TK_RPAREN,
+    TK_LBRACE,
+    TK_RBRACE,
+
+    // símbolos especiales
+    TK_HASH,
+    TK_DOLLAR,
+    TK_EXCLAMATION,
+    TK_QUESTION,
+    TK_AMPERSAND,
+    TK_AT,
+
+    // token desconocido
+    TK_UNKNOWN,
+
+    // fin de archivo
+    TK_END_OF_FILE
 };
 
-// estructura para los tokens solos
-struct Token {
-
-    TokenType type; // tipo (basicamente son los que pusimos arriba)
-    std::string value; // texto original
-
+struct Token
+{
+    TokenType type;
+    std::string value;
 };
 
-static std::string tokenTypeToString(TokenType type) // con esta funcion en la salida muestra el tipo de token
+inline std::string tokenTypeToString(TokenType type)
 {
     switch (type)
     {
-    case TokenType::INT: return "INT";
-    case TokenType::STRING: return "STRING";
-    case TokenType::IF: return "IF";
-    case TokenType::ELSE: return "ELSE";
-    case TokenType::FOR: return "FOR";
-    case TokenType::IDENTIFIER: return "IDENTIFIER";
-    case TokenType::NUMBER: return "NUMBER";
-    case TokenType::STRING_LITERAL: return "STRING_LITERAL";
+    case TK_INT: return "INT";
+    case TK_STRING: return "STRING";
+    case TK_FLOAT: return "FLOAT";
+    case TK_BOOL: return "BOOL";
+    case TK_DOUBLE: return "DOUBLE";
+    case TK_CHAR: return "CHAR";
+    case TK_LONG: return "LONG";
+    case TK_VOID: return "VOID";
 
-    case TokenType::PLUS: return "PLUS";
-    case TokenType::MINUS: return "MINUS";
-    case TokenType::MULT: return "MULT";
-    case TokenType::DIV: return "DIV";
-    case TokenType::MOD: return "MOD";
+    case TK_ENTERO: return "ENTERO";
+    case TK_CADENA: return "CADENA";
+    case TK_DECIMAL: return "DECIMAL";
 
-    case TokenType::LESS: return "LESS";
-    case TokenType::GREATER: return "GREATER";
-    case TokenType::LESS_EQUAL: return "LESS_EQUAL";
-    case TokenType::GREATER_EQUAL: return "GREATER_EQUAL";
+    case TK_IF: return "IF";
+    case TK_ELSE: return "ELSE";
+    case TK_FOR: return "FOR";
+    case TK_WHILE: return "WHILE";
 
-    case TokenType::EQUAL_EQUAL: return "EQUAL_EQUAL";
-    case TokenType::NOT_EQUAL: return "NOT_EQUAL";
+    case TK_INICIO: return "INICIO";
+    case TK_MOSTRAR: return "MOSTRAR";
+    case TK_LEER: return "LEER";
 
-    case TokenType::SEMICOLON: return "SEMICOLON";
+    case TK_IDENTIFIER: return "IDENTIFIER";
+    case TK_NUMBER: return "NUMBER";
+    case TK_STRING_LITERAL: return "STRING_LITERAL";
+    case TK_CHAR_LITERAL: return "CHAR_LITERAL";
 
-    case TokenType::HASH: return "HASH";
-    case TokenType::DOLLAR: return "DOLLAR";
-    case TokenType::EXCLAMATION: return "EXCLAMATION";
-    case TokenType::QUESTION: return "QUESTION";
+    case TK_PLUS: return "PLUS";
+    case TK_MINUS: return "MINUS";
+    case TK_MULT: return "MULT";
+    case TK_DIV: return "DIV";
+    case TK_MOD: return "MOD";
+
+    case TK_LESS: return "LESS";
+    case TK_GREATER: return "GREATER";
+    case TK_LESS_EQUAL: return "LESS_EQUAL";
+    case TK_GREATER_EQUAL: return "GREATER_EQUAL";
+
+    case TK_EQUAL_EQUAL: return "EQUAL_EQUAL";
+    case TK_NOT_EQUAL: return "NOT_EQUAL";
+
+    case TK_ASSIGN: return "ASSIGN";
+
+    case TK_SEMICOLON: return "SEMICOLON";
+    case TK_COMMA: return "COMMA";
+
+    case TK_LPAREN: return "LPAREN";
+    case TK_RPAREN: return "RPAREN";
+    case TK_LBRACE: return "LBRACE";
+    case TK_RBRACE: return "RBRACE";
+
+    case TK_HASH: return "HASH";
+    case TK_DOLLAR: return "DOLLAR";
+    case TK_EXCLAMATION: return "EXCLAMATION";
+    case TK_QUESTION: return "QUESTION";
+    case TK_AMPERSAND: return "AMPERSAND";
+    case TK_AT: return "AT";
+
+    case TK_UNKNOWN: return "UNKNOWN";
+    case TK_END_OF_FILE: return "END_OF_FILE";
 
     default: return "UNKNOWN";
     }
