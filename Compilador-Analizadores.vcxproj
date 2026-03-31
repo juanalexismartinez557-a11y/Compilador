@@ -113,11 +113,13 @@
   <ItemGroup>
     <ClInclude Include="FormPrincipal.h" />
     <ClInclude Include="Lexer.h" />
+    <ClInclude Include="Sintactico.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Sintactico.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

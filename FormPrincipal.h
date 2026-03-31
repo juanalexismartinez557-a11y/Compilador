@@ -1,11 +1,13 @@
-#pragma once
+﻿#pragma once
 #using <System.dll>
 #using <System.Windows.Forms.dll>
 #using <System.Drawing.dll>
 
 #include "Lexer.h"
+#include "Sintactico.h"
 #include <msclr/marshal_cppstd.h>
 #include <string>
+#include <vector>
 
 namespace CompiladorWinForms
 {
@@ -16,74 +18,149 @@ namespace CompiladorWinForms
     {
     private:
         TextBox^ editor;
-        TextBox^ salida;
-        Button^ analizar;
+        TextBox^ salidaLexico;
+        TextBox^ salidaSintactico;
+        Button^ btnLexico;
+        Button^ btnSintactico;
 
     public:
         FormPrincipal()
         {
-            this->Width = 900;
-            this->Height = 500;
-            this->Text = "Compilador - Analizador L�xico";
+            this->Width = 1100;
+            this->Height = 560;
+            this->Text = "Compilador - Analizador Lexico y Sintactico";
 
+            // ── Editor ──────────────────────────────────────────────
             editor = gcnew TextBox();
             editor->Multiline = true;
-            editor->Width = 350;
-            editor->Height = 400;
+            editor->Width = 320;
+            editor->Height = 460;
             editor->Left = 10;
             editor->Top = 10;
             editor->ScrollBars = ScrollBars::Vertical;
+            editor->Font = gcnew System::Drawing::Font("Consolas", 10);
 
-            salida = gcnew TextBox();
-            salida->Multiline = true;
-            salida->Width = 350;
-            salida->Height = 400;
-            salida->Left = 520;
-            salida->Top = 10;
-            salida->ScrollBars = ScrollBars::Vertical;
+            // ── Salida léxico ────────────────────────────────────────
+            salidaLexico = gcnew TextBox();
+            salidaLexico->Multiline = true;
+            salidaLexico->Width = 320;
+            salidaLexico->Height = 460;
+            salidaLexico->Left = 380;
+            salidaLexico->Top = 10;
+            salidaLexico->ScrollBars = ScrollBars::Vertical;
+            salidaLexico->ReadOnly = true;
+            salidaLexico->Font = gcnew System::Drawing::Font("Consolas", 9);
 
-            analizar = gcnew Button();
-            analizar->Text = "Analizar L�xico";
-            analizar->Left = 380;
-            analizar->Top = 200;
-            analizar->Width = 120;
-            analizar->Height = 35;
+            // ── Salida sintáctico ────────────────────────────────────
+            salidaSintactico = gcnew TextBox();
+            salidaSintactico->Multiline = true;
+            salidaSintactico->Width = 320;
+            salidaSintactico->Height = 460;
+            salidaSintactico->Left = 750;
+            salidaSintactico->Top = 10;
+            salidaSintactico->ScrollBars = ScrollBars::Vertical;
+            salidaSintactico->ReadOnly = true;
+            salidaSintactico->Font = gcnew System::Drawing::Font("Consolas", 9);
 
-            analizar->Click += gcnew EventHandler(this, &FormPrincipal::Analizar);
+            // ── Botones ──────────────────────────────────────────────
+            btnLexico = gcnew Button();
+            btnLexico->Text = "Analizar Lexico";
+            btnLexico->Left = 340;
+            btnLexico->Top = 200;
+            btnLexico->Width = 30;
+            btnLexico->Height = 35;
+            btnLexico->Click += gcnew EventHandler(this, &FormPrincipal::AnalizarLexico);
+
+            btnSintactico = gcnew Button();
+            btnSintactico->Text = "Analizar Sint.";
+            btnSintactico->Left = 710;
+            btnSintactico->Top = 200;
+            btnSintactico->Width = 30;
+            btnSintactico->Height = 35;
+            btnSintactico->Click += gcnew EventHandler(this, &FormPrincipal::AnalizarSintactico);
 
             Controls->Add(editor);
-            Controls->Add(salida);
-            Controls->Add(analizar);
+            Controls->Add(salidaLexico);
+            Controls->Add(salidaSintactico);
+            Controls->Add(btnLexico);
+            Controls->Add(btnSintactico);
         }
 
     private:
-        void Analizar(Object^ sender, EventArgs^ e)
+        // Devuelve todos los tokens (sin EOF) del editor
+        std::vector<Token> obtenerTokens()
         {
-            salida->Clear();
+            std::string codigo =
+                msclr::interop::marshal_as<std::string>(editor->Text);
+            Lexer lexer(codigo);
+            std::vector<Token> tokens;
+            while (true)
+            {
+                Token t = lexer.getNextToken();
+                if (t.type == TK_END_OF_FILE) break;
+                tokens.push_back(t);
+            }
+            return tokens;
+        }
 
-            std::string codigo = msclr::interop::marshal_as<std::string>(editor->Text);
+        void AnalizarLexico(Object^ sender, EventArgs^ e)
+        {
+            salidaLexico->Clear();
+            std::string codigo =
+                msclr::interop::marshal_as<std::string>(editor->Text);
             Lexer lexer(codigo);
 
             while (true)
             {
                 Token t = lexer.getNextToken();
-
-                if (t.type == TK_END_OF_FILE)
-                    break;
+                if (t.type == TK_END_OF_FILE) break;
 
                 std::string tipo = tokenTypeToString(t.type);
                 std::string linea = "TOKEN: " + t.value + "  |  TIPO: " + tipo;
-
-                salida->AppendText(gcnew String(linea.c_str()));
-                salida->AppendText("\r\n");
+                salidaLexico->AppendText(gcnew String(linea.c_str()));
+                salidaLexico->AppendText("\r\n");
             }
 
-            salida->AppendText("\r\n--- PROCESO DEL ANALISIS ---\r\n");
-
+            salidaLexico->AppendText("\r\n--- PROCESO DEL ANALISIS ---\r\n");
             for (size_t i = 0; i < lexer.log.size(); i++)
             {
-                salida->AppendText(gcnew String(lexer.log[i].c_str()));
-                salida->AppendText("\r\n");
+                salidaLexico->AppendText(gcnew String(lexer.log[i].c_str()));
+                salidaLexico->AppendText("\r\n");
+            }
+        }
+
+        void AnalizarSintactico(Object^ sender, EventArgs^ e)
+        {
+            salidaSintactico->Clear();
+            std::vector<Token> tokens = obtenerTokens();
+
+            Parser parser(tokens);
+            parser.parse();
+
+            // Errores primero
+            if (parser.errors.empty())
+            {
+                salidaSintactico->AppendText("=== RESULTADO: SINTAXIS CORRECTA ===\r\n\r\n");
+            }
+            else
+            {
+                salidaSintactico->AppendText("=== RESULTADO: ERRORES ENCONTRADOS ===\r\n\r\n");
+                for (size_t i = 0; i < parser.errors.size(); i++)
+                {
+                    salidaSintactico->AppendText(
+                        gcnew String(parser.errors[i].c_str()));
+                    salidaSintactico->AppendText("\r\n");
+                }
+                salidaSintactico->AppendText("\r\n");
+            }
+
+            // Log del proceso
+            salidaSintactico->AppendText("--- PROCESO DEL ANALISIS ---\r\n");
+            for (size_t i = 0; i < parser.log.size(); i++)
+            {
+                salidaSintactico->AppendText(
+                    gcnew String(parser.log[i].c_str()));
+                salidaSintactico->AppendText("\r\n");
             }
         }
     };
