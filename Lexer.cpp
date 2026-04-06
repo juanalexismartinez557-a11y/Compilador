@@ -13,7 +13,6 @@ Token Lexer::getNextToken()
     {
         char c = input[pos];
 
-        // Ignorar espacios en blanco
         if (isspace((unsigned char)c))
         {
             log.push_back("Espacio en blanco encontrado, se ignora.");
@@ -21,7 +20,6 @@ Token Lexer::getNextToken()
             continue;
         }
 
-        // Números (enteros y decimales)
         if (isdigit((unsigned char)c))
         {
             std::string number;
@@ -50,7 +48,6 @@ Token Lexer::getNextToken()
             return Token{ TK_NUMBER, number };
         }
 
-        // Identificadores y palabras reservadas
         if (isalpha((unsigned char)c) || c == '_')
         {
             std::string id;
@@ -64,16 +61,13 @@ Token Lexer::getNextToken()
 
             log.push_back("Identificador o palabra reservada encontrada: " + id);
 
-            // Tipos de dato conservados
             if (id == "string" || id == "STRING")  return Token{ TK_STRING,  id };
             if (id == "double" || id == "DOUBLE")  return Token{ TK_DOUBLE,  id };
 
-            // Estructuras de control
             if (id == "if" || id == "IF")   return Token{ TK_IF,    id };
             if (id == "else" || id == "ELSE") return Token{ TK_ELSE,  id };
             if (id == "for" || id == "FOR")  return Token{ TK_FOR,   id };
 
-            // Palabras reservadas personalizadas
             if (id == "inicio" || id == "INICIO")   return Token{ TK_INICIO,   id };
             if (id == "mostrar" || id == "MOSTRAR")  return Token{ TK_MOSTRAR,  id };
             if (id == "leer" || id == "LEER")     return Token{ TK_LEER,     id };
@@ -82,7 +76,6 @@ Token Lexer::getNextToken()
             return Token{ TK_IDENTIFIER, id };
         }
 
-        // Literales de cadena
         if (c == '"')
         {
             pos++;
@@ -105,7 +98,6 @@ Token Lexer::getNextToken()
             return Token{ TK_UNKNOWN, str };
         }
 
-        // Literales de carácter
         if (c == '\'')
         {
             pos++;
@@ -134,17 +126,14 @@ Token Lexer::getNextToken()
             return Token{ TK_UNKNOWN, ch };
         }
 
-        // Operadores y símbolos
         switch (c)
         {
-            // Operadores aritméticos
         case '+': pos++; return Token{ TK_PLUS,  "+" };
         case '-': pos++; return Token{ TK_MINUS, "-" };
         case '*': pos++; return Token{ TK_MULT,  "*" };
         case '/': pos++; return Token{ TK_DIV,   "/" };
         case '%': pos++; return Token{ TK_MOD,   "%" };
 
-                // Operadores relacionales
         case '<':
             pos++;
             if (pos < (int)input.length() && input[pos] == '=')
@@ -163,7 +152,6 @@ Token Lexer::getNextToken()
             }
             return Token{ TK_GREATER, ">" };
 
-            // Asignación e igualdad
         case '=':
             pos++;
             if (pos < (int)input.length() && input[pos] == '=')
@@ -173,7 +161,6 @@ Token Lexer::getNextToken()
             }
             return Token{ TK_ASSIGN, "=" };
 
-            // Negación y desigualdad
         case '!':
             pos++;
             if (pos < (int)input.length() && input[pos] == '=')
@@ -183,17 +170,14 @@ Token Lexer::getNextToken()
             }
             return Token{ TK_EXCLAMATION, "!" };
 
-            // Separadores
         case ';': pos++; return Token{ TK_SEMICOLON, ";" };
         case ',': pos++; return Token{ TK_COMMA,     "," };
 
-                // Agrupadores
         case '(': pos++; return Token{ TK_LPAREN, "(" };
         case ')': pos++; return Token{ TK_RPAREN, ")" };
         case '{': pos++; return Token{ TK_LBRACE, "{" };
         case '}': pos++; return Token{ TK_RBRACE, "}" };
 
-                // Símbolos especiales
         case '#': pos++; return Token{ TK_HASH,        "#" };
         case '$': pos++; return Token{ TK_DOLLAR,      "$" };
         case '?': pos++; return Token{ TK_QUESTION,    "?" };

@@ -30,7 +30,6 @@ namespace CompiladorWinForms
             this->Height = 560;
             this->Text = "Compilador - Analizador Lexico y Sintactico";
 
-            // ── Editor ──────────────────────────────────────────────
             editor = gcnew TextBox();
             editor->Multiline = true;
             editor->Width = 320;
@@ -40,7 +39,6 @@ namespace CompiladorWinForms
             editor->ScrollBars = ScrollBars::Vertical;
             editor->Font = gcnew System::Drawing::Font("Consolas", 10);
 
-            // ── Salida léxico ────────────────────────────────────────
             salidaLexico = gcnew TextBox();
             salidaLexico->Multiline = true;
             salidaLexico->Width = 320;
@@ -51,7 +49,6 @@ namespace CompiladorWinForms
             salidaLexico->ReadOnly = true;
             salidaLexico->Font = gcnew System::Drawing::Font("Consolas", 9);
 
-            // ── Salida sintáctico ────────────────────────────────────
             salidaSintactico = gcnew TextBox();
             salidaSintactico->Multiline = true;
             salidaSintactico->Width = 320;
@@ -62,7 +59,6 @@ namespace CompiladorWinForms
             salidaSintactico->ReadOnly = true;
             salidaSintactico->Font = gcnew System::Drawing::Font("Consolas", 9);
 
-            // ── Botones ──────────────────────────────────────────────
             btnLexico = gcnew Button();
             btnLexico->Text = "Analizar Lexico";
             btnLexico->Left = 340;
@@ -87,7 +83,6 @@ namespace CompiladorWinForms
         }
 
     private:
-        // Devuelve todos los tokens (sin EOF) del editor
         std::vector<Token> obtenerTokens()
         {
             std::string codigo =
@@ -137,7 +132,6 @@ namespace CompiladorWinForms
             Parser parser(tokens);
             parser.parse();
 
-            // Errores primero
             if (parser.errors.empty())
             {
                 salidaSintactico->AppendText("=== RESULTADO: SINTAXIS CORRECTA ===\r\n\r\n");
@@ -154,7 +148,6 @@ namespace CompiladorWinForms
                 salidaSintactico->AppendText("\r\n");
             }
 
-            // Log del proceso
             salidaSintactico->AppendText("--- PROCESO DEL ANALISIS ---\r\n");
             for (size_t i = 0; i < parser.log.size(); i++)
             {

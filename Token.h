@@ -3,58 +3,47 @@
 
 enum TokenType
 {
-    // Tipos de dato conservados
     TK_STRING,
     TK_DOUBLE,
 
-    // Estructuras de control
     TK_IF,
     TK_ELSE,
     TK_FOR,
 
-    // Palabras reservadas personalizadas
     TK_INICIO,
     TK_MOSTRAR,
     TK_LEER,
     TK_PRINT,
 
-    // Identificadores y literales
     TK_IDENTIFIER,
     TK_NUMBER,
     TK_STRING_LITERAL,
     TK_CHAR_LITERAL,
 
-    // Operadores aritméticos
     TK_PLUS,
     TK_MINUS,
     TK_MULT,
     TK_DIV,
     TK_MOD,
 
-    // Operadores relacionales
     TK_LESS,
     TK_GREATER,
     TK_LESS_EQUAL,
     TK_GREATER_EQUAL,
 
-    // Operadores de igualdad
     TK_EQUAL_EQUAL,
     TK_NOT_EQUAL,
 
-    // Asignación
     TK_ASSIGN,
 
-    // Separadores
     TK_SEMICOLON,
     TK_COMMA,
 
-    // Agrupadores
     TK_LPAREN,
     TK_RPAREN,
     TK_LBRACE,
     TK_RBRACE,
 
-    // Símbolos especiales (mínimo 5)
     TK_HASH,
     TK_DOLLAR,
     TK_EXCLAMATION,
@@ -62,10 +51,8 @@ enum TokenType
     TK_AMPERSAND,
     TK_AT,
 
-    // Token desconocido
     TK_UNKNOWN,
 
-    // Fin de archivo
     TK_END_OF_FILE
 };
 
