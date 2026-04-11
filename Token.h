@@ -14,13 +14,15 @@ enum TokenType
     TK_MOSTRAR,
     TK_LEER,
     TK_PRINT,
+    TK_PRUEBA,
 
     TK_IDENTIFIER,
     TK_NUMBER,
     TK_STRING_LITERAL,
     TK_CHAR_LITERAL,
 
-    TK_PLUS,
+    TK_SUMA,
+    TK_INCREMENTO,
     TK_MINUS,
     TK_MULT,
     TK_DIV,
@@ -75,11 +77,13 @@ inline std::string tokenTypeToString(TokenType type)
     case TK_MOSTRAR:        return "MOSTRAR";
     case TK_LEER:           return "LEER";
     case TK_PRINT:          return "PRINT";
+    case TK_PRUEBA:          return "PRUEBA";
     case TK_IDENTIFIER:     return "IDENTIFIER";
     case TK_NUMBER:         return "NUMBER";
     case TK_STRING_LITERAL: return "STRING_LITERAL";
     case TK_CHAR_LITERAL:   return "CHAR_LITERAL";
-    case TK_PLUS:           return "PLUS";
+    case TK_SUMA:           return "SUMA";
+    case TK_INCREMENTO:           return "INCREMENTO";
     case TK_MINUS:          return "MINUS";
     case TK_MULT:           return "MULT";
     case TK_DIV:            return "DIV";

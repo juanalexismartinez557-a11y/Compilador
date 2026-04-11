@@ -372,7 +372,7 @@ void Parser::parseComparison()
 void Parser::parseTerm()
 {
     parseFactor();
-    while (check(TK_PLUS) || check(TK_MINUS))
+    while (check(TK_SUMA) || check(TK_MINUS))
     {
         consume();
         parseFactor();

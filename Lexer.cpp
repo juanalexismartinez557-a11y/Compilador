@@ -48,7 +48,7 @@ Token Lexer::getNextToken()
             return Token{ TK_NUMBER, number };
         }
 
-        if (isalpha((unsigned char)c) || c == '_')
+        if (isalpha((unsigned char)c) || c == '_') 
         {
             std::string id;
 
@@ -72,6 +72,7 @@ Token Lexer::getNextToken()
             if (id == "mostrar" || id == "MOSTRAR")  return Token{ TK_MOSTRAR,  id };
             if (id == "leer" || id == "LEER")     return Token{ TK_LEER,     id };
             if (id == "print" || id == "PRINT")    return Token{ TK_PRINT,    id };
+            if (id == "prueba" || id == "PRUEBA")    return Token{ TK_PRUEBA,    id }; 
 
             return Token{ TK_IDENTIFIER, id };
         }
@@ -128,7 +129,7 @@ Token Lexer::getNextToken()
 
         switch (c)
         {
-        case '+': pos++; return Token{ TK_PLUS,  "+" };
+
         case '-': pos++; return Token{ TK_MINUS, "-" };
         case '*': pos++; return Token{ TK_MULT,  "*" };
         case '/': pos++; return Token{ TK_DIV,   "/" };
@@ -142,6 +143,15 @@ Token Lexer::getNextToken()
                 return Token{ TK_LESS_EQUAL, "<=" };
             }
             return Token{ TK_LESS, "<" };
+
+        case '+': 
+            pos++;
+            if (pos < (int)input.length() && input[pos] == '+')
+            {
+                pos++;
+                return Token{ TK_INCREMENTO, "++" };
+            }
+            return Token{ TK_SUMA, "+" };
 
         case '>':
             pos++;
