@@ -60,7 +60,6 @@ bool Parser::isAtEnd()
     return current().type == TK_END_OF_FILE;
 }
 
-// Avanza hasta un punto seguro para seguir parseando tras un error
 void Parser::synchronize()
 {
     while (!isAtEnd())
@@ -96,7 +95,6 @@ void Parser::parseStatement()
 {
     Token t = current();
 
-    // Declaración de variable: string | double
     if (t.type == TK_STRING || t.type == TK_DOUBLE)
     {
         log.push_back("Declaracion de variable detectada: " + t.value);
@@ -104,7 +102,6 @@ void Parser::parseStatement()
         return;
     }
 
-    // if
     if (t.type == TK_IF)
     {
         log.push_back("Sentencia if detectada.");
@@ -112,7 +109,6 @@ void Parser::parseStatement()
         return;
     }
 
-    // for
     if (t.type == TK_FOR)
     {
         log.push_back("Sentencia for detectada.");
@@ -120,7 +116,6 @@ void Parser::parseStatement()
         return;
     }
 
-    // mostrar / print
     if (t.type == TK_MOSTRAR || t.type == TK_PRINT)
     {
         log.push_back("Sentencia mostrar/print detectada.");
@@ -128,7 +123,6 @@ void Parser::parseStatement()
         return;
     }
 
-    // Bloque { }
     if (t.type == TK_LBRACE)
     {
         log.push_back("Bloque detectado.");
@@ -136,10 +130,8 @@ void Parser::parseStatement()
         return;
     }
 
-    // Asignación: IDENTIFIER = expr ;
     if (t.type == TK_IDENTIFIER)
     {
-        // Comprobamos que el siguiente sea '='
         if (peek(1).type == TK_ASSIGN)
         {
             log.push_back("Asignacion detectada: " + t.value);
@@ -147,24 +139,21 @@ void Parser::parseStatement()
             return;
         }
 
-        // Si no es asignación, podría ser una llamada o expresión suelta
         errors.push_back("ERROR SINTACTICO: se esperaba '=' despues de '" +
             t.value + "' (se encontro '" + peek(1).value + "')");
         synchronize();
         return;
     }
 
-    // Token inesperado
     errors.push_back("ERROR SINTACTICO: sentencia invalida, token inesperado '" +
         t.value + "'");
     consume();
     synchronize();
 }
 
-// varDecl → TYPE IDENTIFIER (= expr)? ;
 void Parser::parseVarDecl(TokenType typeToken)
 {
-    consume(); // consume el tipo (string / double)
+    consume(); 
 
     if (!expect(TK_IDENTIFIER, "se esperaba un identificador despues del tipo"))
     {
@@ -186,12 +175,11 @@ void Parser::parseVarDecl(TokenType typeToken)
         log.push_back("Declaracion de '" + varName + "' valida.");
 }
 
-// assignment → IDENTIFIER = expr ;
 void Parser::parseAssignment()
 {
     std::string varName = current().value;
-    consume();              // IDENTIFIER
-    consume();              // =
+    consume();              
+    consume();              
     parseExpr();
 
     if (!expect(TK_SEMICOLON, "se esperaba ';' al final de la asignacion a '" + varName + "'"))
@@ -200,10 +188,9 @@ void Parser::parseAssignment()
         log.push_back("Asignacion a '" + varName + "' valida.");
 }
 
-// ifStmt → if ( expr ) block (else block)?
 void Parser::parseIfStmt()
 {
-    consume(); // if
+    consume(); 
 
     if (!expect(TK_LPAREN, "se esperaba '(' despues de 'if'"))
     {
@@ -242,26 +229,23 @@ void Parser::parseIfStmt()
     log.push_back("Sentencia if valida.");
 }
 
-// forStmt → for ( varDecl|assignment  expr ;  IDENTIFIER = expr ) block
 void Parser::parseForStmt()
 {
-    consume(); // for
+    consume(); 
 
     if (!expect(TK_LPAREN, "se esperaba '(' despues de 'for'"))
     {
         synchronize(); return;
     }
 
-    // Inicializacion
     Token t = current();
     if (t.type == TK_STRING || t.type == TK_DOUBLE)
     {
-        // declaración con ; ya la consume parseVarDecl
         parseVarDecl(t.type);
     }
     else if (t.type == TK_IDENTIFIER && peek(1).type == TK_ASSIGN)
     {
-        parseAssignment(); // consume el ;
+        parseAssignment(); 
     }
     else
     {
@@ -271,14 +255,12 @@ void Parser::parseForStmt()
         return;
     }
 
-    // Condicion
     parseExpr();
     if (!expect(TK_SEMICOLON, "se esperaba ';' despues de la condicion del for"))
     {
         synchronize(); return;
     }
 
-    // Incremento/decremento: IDENTIFIER = expr  (sin ; al final, lo cierra el ')')
     if (!check(TK_IDENTIFIER))
     {
         errors.push_back("ERROR SINTACTICO: se esperaba identificador en el incremento del for"
@@ -286,7 +268,7 @@ void Parser::parseForStmt()
         synchronize();
         return;
     }
-    consume(); // IDENTIFIER
+    consume(); 
     if (!expect(TK_ASSIGN, "se esperaba '=' en el incremento del for"))
     {
         synchronize(); return;
@@ -309,10 +291,9 @@ void Parser::parseForStmt()
     log.push_back("Sentencia for valida.");
 }
 
-// mostrarStmt → (mostrar|print) ( expr ) ;
 void Parser::parseMostrarStmt()
 {
-    consume(); // mostrar / print
+    consume(); 
 
     if (!expect(TK_LPAREN, "se esperaba '(' despues de mostrar/print"))
     {
@@ -332,10 +313,9 @@ void Parser::parseMostrarStmt()
         log.push_back("Sentencia mostrar/print valida.");
 }
 
-// block → { statement* }
 void Parser::parseBlock()
 {
-    consume(); // {
+    consume(); 
     while (!isAtEnd() && !check(TK_RBRACE))
         parseStatement();
 
@@ -345,7 +325,6 @@ void Parser::parseBlock()
         log.push_back("Bloque valido.");
 }
 
-// expr → comparison ((== | !=) comparison)*
 void Parser::parseExpr()
 {
     parseComparison();
@@ -356,7 +335,6 @@ void Parser::parseExpr()
     }
 }
 
-// comparison → term ((< | > | <= | >=) term)*
 void Parser::parseComparison()
 {
     parseTerm();
@@ -368,7 +346,6 @@ void Parser::parseComparison()
     }
 }
 
-// term → factor ((+ | -) factor)*
 void Parser::parseTerm()
 {
     parseFactor();
@@ -379,7 +356,6 @@ void Parser::parseTerm()
     }
 }
 
-// factor → unary ((* | /) unary)*
 void Parser::parseFactor()
 {
     parseUnary();
@@ -390,7 +366,6 @@ void Parser::parseFactor()
     }
 }
 
-// unary → ! unary | primary
 void Parser::parseUnary()
 {
     if (check(TK_EXCLAMATION) || check(TK_MINUS))
@@ -402,7 +377,6 @@ void Parser::parseUnary()
     parsePrimary();
 }
 
-// primary → NUMBER | STRING_LITERAL | CHAR_LITERAL | IDENTIFIER | ( expr )
 void Parser::parsePrimary()
 {
     Token t = current();

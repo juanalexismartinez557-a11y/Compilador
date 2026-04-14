@@ -83,7 +83,7 @@ inline std::string tokenTypeToString(TokenType type)
     case TK_STRING_LITERAL: return "STRING_LITERAL";
     case TK_CHAR_LITERAL:   return "CHAR_LITERAL";
     case TK_SUMA:           return "SUMA";
-    case TK_INCREMENTO:           return "INCREMENTO";
+    case TK_INCREMENTO:     return "INCREMENTO";
     case TK_MINUS:          return "MINUS";
     case TK_MULT:           return "MULT";
     case TK_DIV:            return "DIV";
