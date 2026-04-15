@@ -5,6 +5,8 @@
 
 #include "Lexer.h"
 #include "Sintactico.h"
+#include "Semantico.h"
+
 #include <msclr/marshal_cppstd.h>
 #include <string>
 #include <vector>
@@ -13,73 +15,117 @@ namespace CompiladorWinForms
 {
     using namespace System;
     using namespace System::Windows::Forms;
+    using namespace System::Drawing;
 
     public ref class FormPrincipal : public Form
     {
     private:
+        // TextBoxes
         TextBox^ editor;
         TextBox^ salidaLexico;
         TextBox^ salidaSintactico;
+        TextBox^ salidaSemantico;
+
+        // Botones
+        Button^ btnTodos;
         Button^ btnLexico;
         Button^ btnSintactico;
+        Button^ btnSemantico;
 
     public:
         FormPrincipal()
         {
             this->Width = 1100;
-            this->Height = 560;
-            this->Text = "Compilador - Analizador Lexico y Sintactico";
+            this->Height = 650;
+            this->Text = "Compilador - Analizador Completo";
+
+            int panelW = 520;
+            int panelH = 260;
+
+            // ================= PANEL CODIGO =================
+            Panel^ panelCodigo = gcnew Panel();
+            panelCodigo->SetBounds(10, 10, panelW, panelH);
+
+            btnTodos = gcnew Button();
+            btnTodos->Text = "Todos los análisis";
+            btnTodos->Dock = DockStyle::Top;
+            btnTodos->Height = 30;
+            btnTodos->Click += gcnew EventHandler(this, &FormPrincipal::AnalizarTodo);
 
             editor = gcnew TextBox();
             editor->Multiline = true;
-            editor->Width = 320;
-            editor->Height = 460;
-            editor->Left = 10;
-            editor->Top = 10;
-            editor->ScrollBars = ScrollBars::Vertical;
+            editor->Dock = DockStyle::Fill;
             editor->Font = gcnew System::Drawing::Font("Consolas", 10);
+            editor->ScrollBars = ScrollBars::Vertical;
+
+            panelCodigo->Controls->Add(editor);
+            panelCodigo->Controls->Add(btnTodos);
+
+            // ================= PANEL LEXICO =================
+            Panel^ panelLexico = gcnew Panel();
+            panelLexico->SetBounds(550, 10, panelW, panelH);
+
+            btnLexico = gcnew Button();
+            btnLexico->Text = "Análisis Léxico";
+            btnLexico->Dock = DockStyle::Top;
+            btnLexico->Height = 30;
+            btnLexico->Click += gcnew EventHandler(this, &FormPrincipal::AnalizarLexico);
 
             salidaLexico = gcnew TextBox();
             salidaLexico->Multiline = true;
-            salidaLexico->Width = 320;
-            salidaLexico->Height = 460;
-            salidaLexico->Left = 380;
-            salidaLexico->Top = 10;
-            salidaLexico->ScrollBars = ScrollBars::Vertical;
+            salidaLexico->Dock = DockStyle::Fill;
             salidaLexico->ReadOnly = true;
             salidaLexico->Font = gcnew System::Drawing::Font("Consolas", 9);
+            salidaLexico->ScrollBars = ScrollBars::Vertical;
+
+            panelLexico->Controls->Add(salidaLexico);
+            panelLexico->Controls->Add(btnLexico);
+
+            // ================= PANEL SINTACTICO =================
+            Panel^ panelSintactico = gcnew Panel();
+            panelSintactico->SetBounds(10, 290, panelW, panelH);
+
+            btnSintactico = gcnew Button();
+            btnSintactico->Text = "Análisis Sintáctico";
+            btnSintactico->Dock = DockStyle::Top;
+            btnSintactico->Height = 30;
+            btnSintactico->Click += gcnew EventHandler(this, &FormPrincipal::AnalizarSintactico);
 
             salidaSintactico = gcnew TextBox();
             salidaSintactico->Multiline = true;
-            salidaSintactico->Width = 320;
-            salidaSintactico->Height = 460;
-            salidaSintactico->Left = 750;
-            salidaSintactico->Top = 10;
-            salidaSintactico->ScrollBars = ScrollBars::Vertical;
+            salidaSintactico->Dock = DockStyle::Fill;
             salidaSintactico->ReadOnly = true;
             salidaSintactico->Font = gcnew System::Drawing::Font("Consolas", 9);
+            salidaSintactico->ScrollBars = ScrollBars::Vertical;
 
-            btnLexico = gcnew Button();
-            btnLexico->Text = "Analizar Lexico";
-            btnLexico->Left = 340;
-            btnLexico->Top = 200;
-            btnLexico->Width = 30;
-            btnLexico->Height = 35;
-            btnLexico->Click += gcnew EventHandler(this, &FormPrincipal::AnalizarLexico);
+            panelSintactico->Controls->Add(salidaSintactico);
+            panelSintactico->Controls->Add(btnSintactico);
 
-            btnSintactico = gcnew Button();
-            btnSintactico->Text = "Analizar Sint.";
-            btnSintactico->Left = 710;
-            btnSintactico->Top = 200;
-            btnSintactico->Width = 30;
-            btnSintactico->Height = 35;
-            btnSintactico->Click += gcnew EventHandler(this, &FormPrincipal::AnalizarSintactico);
+            // ================= PANEL SEMANTICO =================
+            Panel^ panelSemantico = gcnew Panel();
+            panelSemantico->SetBounds(550, 290, panelW, panelH);
 
-            Controls->Add(editor);
-            Controls->Add(salidaLexico);
-            Controls->Add(salidaSintactico);
-            Controls->Add(btnLexico);
-            Controls->Add(btnSintactico);
+            btnSemantico = gcnew Button();
+            btnSemantico->Text = "Análisis Semántico";
+            btnSemantico->Dock = DockStyle::Top;
+            btnSemantico->Height = 30;
+            btnSemantico->Click += gcnew EventHandler(this, &FormPrincipal::AnalizarSemantico);
+
+            salidaSemantico = gcnew TextBox();
+            salidaSemantico->Multiline = true;
+            salidaSemantico->Dock = DockStyle::Fill;
+            salidaSemantico->ReadOnly = true;
+            salidaSemantico->Font = gcnew System::Drawing::Font("Consolas", 9);
+            salidaSemantico->ScrollBars = ScrollBars::Vertical;
+
+            panelSemantico->Controls->Add(salidaSemantico);
+            panelSemantico->Controls->Add(btnSemantico);
+
+            // Agregar todo al form
+            Controls->Add(panelCodigo);
+            Controls->Add(panelLexico);
+            Controls->Add(panelSintactico);
+            Controls->Add(panelSemantico);
         }
 
     private:
@@ -87,8 +133,10 @@ namespace CompiladorWinForms
         {
             std::string codigo =
                 msclr::interop::marshal_as<std::string>(editor->Text);
+
             Lexer lexer(codigo);
             std::vector<Token> tokens;
+
             while (true)
             {
                 Token t = lexer.getNextToken();
@@ -98,63 +146,128 @@ namespace CompiladorWinForms
             return tokens;
         }
 
+        // ================= LEXICO =================
         void AnalizarLexico(Object^ sender, EventArgs^ e)
         {
             salidaLexico->Clear();
+
             std::string codigo =
                 msclr::interop::marshal_as<std::string>(editor->Text);
+
             Lexer lexer(codigo);
 
+            // TOKENS
             while (true)
             {
                 Token t = lexer.getNextToken();
                 if (t.type == TK_END_OF_FILE) break;
 
                 std::string tipo = tokenTypeToString(t.type);
-                std::string linea = "TOKEN: " + t.value + "  |  TIPO: " + tipo;
-                salidaLexico->AppendText(gcnew String(linea.c_str()));
-                salidaLexico->AppendText("\r\n");
+                std::string linea = "TOKEN: " + t.value + " | TIPO: " + tipo;
+
+                salidaLexico->AppendText(gcnew String(linea.c_str()) + "\r\n");
             }
 
+            // LOGS
             salidaLexico->AppendText("\r\n--- PROCESO DEL ANALISIS ---\r\n");
+
             for (size_t i = 0; i < lexer.log.size(); i++)
             {
-                salidaLexico->AppendText(gcnew String(lexer.log[i].c_str()));
-                salidaLexico->AppendText("\r\n");
+                salidaLexico->AppendText(
+                    gcnew String(lexer.log[i].c_str()) + "\r\n");
             }
         }
 
+        // ================= SINTACTICO =================
         void AnalizarSintactico(Object^ sender, EventArgs^ e)
         {
             salidaSintactico->Clear();
-            std::vector<Token> tokens = obtenerTokens();
 
+            std::vector<Token> tokens = obtenerTokens();
             Parser parser(tokens);
             parser.parse();
 
             if (parser.errors.empty())
             {
-                salidaSintactico->AppendText("=== RESULTADO: SINTAXIS CORRECTA ===\r\n\r\n");
+                salidaSintactico->AppendText("=== SINTAXIS CORRECTA ===\r\n\r\n");
             }
             else
             {
-                salidaSintactico->AppendText("=== RESULTADO: ERRORES ENCONTRADOS ===\r\n\r\n");
-                for (size_t i = 0; i < parser.errors.size(); i++)
+                salidaSintactico->AppendText("=== ERRORES ===\r\n\r\n");
+
+                for (auto& err : parser.errors)
                 {
                     salidaSintactico->AppendText(
-                        gcnew String(parser.errors[i].c_str()));
-                    salidaSintactico->AppendText("\r\n");
+                        gcnew String(err.c_str()) + "\r\n");
                 }
                 salidaSintactico->AppendText("\r\n");
             }
 
-            salidaSintactico->AppendText("--- PROCESO DEL ANALISIS ---\r\n");
-            for (size_t i = 0; i < parser.log.size(); i++)
+            // LOGS
+            salidaSintactico->AppendText("--- PROCESO ---\r\n");
+
+            for (auto& l : parser.log)
             {
                 salidaSintactico->AppendText(
-                    gcnew String(parser.log[i].c_str()));
-                salidaSintactico->AppendText("\r\n");
+                    gcnew String(l.c_str()) + "\r\n");
             }
+        }
+
+        // ================= SEMANTICO =================
+        void AnalizarSemantico(Object^ sender, EventArgs^ e)
+        {
+            salidaSemantico->Clear();
+
+            std::vector<Token> tokens = obtenerTokens();
+
+            Parser parser(tokens);
+            parser.parse();
+
+            if (!parser.errors.empty())
+            {
+                salidaSemantico->AppendText(
+                    "Error: no se puede ejecutar el análisis semántico\n");
+                salidaSemantico->AppendText(
+                    "Corrige primero el sintáctico.\n");
+                return;
+            }
+
+            Semantico sem(tokens);
+            sem.analyze();
+
+            // LOGS
+            salidaSemantico->AppendText("--- PROCESO ---\r\n");
+
+            for (auto& l : sem.log)
+            {
+                salidaSemantico->AppendText(
+                    gcnew String(l.c_str()) + "\r\n");
+            }
+
+            // ERRORES SEMÁNTICOS
+            if (!sem.errors.empty())
+            {
+                salidaSemantico->AppendText("\r\n--- ERRORES ---\r\n");
+
+                for (auto& e : sem.errors)
+                {
+                    salidaSemantico->AppendText(
+                        gcnew String(e.c_str()) + "\r\n");
+                }
+            }
+            else
+            {
+                salidaSemantico->AppendText(
+                    "\r\n=== SEMANTICA CORRECTA ===\r\n");
+            }
+        }
+
+        // ================= TODOS =================
+        void AnalizarTodo(Object^ sender, EventArgs^ e)
+        {
+            AnalizarLexico(nullptr, nullptr);
+            AnalizarSintactico(nullptr, nullptr);
+            AnalizarSemantico(nullptr, nullptr);
         }
     };
 }
