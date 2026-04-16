@@ -7,11 +7,11 @@ Semantico::Semantico(std::vector<Token> tokens)
 {
     this->tokens = tokens;
     this->pos = 0;
-    scopeStack.push_back({}); // scope global
+    // symbols empieza vacío — se llena conforme se declaran variables
 }
 
 // ════════════════════════════════════════════════════════════════
-//  NAVEGACIÓN  (idéntica al parser)
+//  NAVEGACIÓN
 // ════════════════════════════════════════════════════════════════
 Token Semantico::current()
 {
@@ -49,76 +49,52 @@ void Semantico::synchronize()
     {
         if (check(TK_SEMICOLON)) { consume(); return; }
         if (check(TK_RBRACE))             return;
-        if (check(TK_IF) || check(TK_FOR) ||
-            check(TK_MOSTRAR) || check(TK_PRINT)) return;
+        if (check(TK_IF) ||
+            check(TK_FOR) ||
+            check(TK_MOSTRAR) ||
+            check(TK_PRINT))          return;
         consume();
     }
 }
 
 // ════════════════════════════════════════════════════════════════
-//  TABLA DE SÍMBOLOS
+//  TABLA DE SÍMBOLOS  (mapa plano, sin scopes)
 // ════════════════════════════════════════════════════════════════
 
-// Abre un nuevo nivel de scope (al entrar a un bloque { })
-void Semantico::pushScope()
-{
-    scopeStack.push_back({});
-    log.push_back("Scope abierto  (nivel " +
-        std::to_string(scopeStack.size() - 1) + ").");
-}
-
-// Cierra el nivel actual y elimina todas sus variables
-void Semantico::popScope()
-{
-    if (scopeStack.empty()) return;
-    log.push_back("Scope cerrado  (nivel " +
-        std::to_string(scopeStack.size() - 1) + ").");
-    scopeStack.pop_back();
-}
-
-// Intenta registrar una variable en el scope actual.
-// Falla si ya existe en ESE mismo scope (redeclaración).
+// Registra una variable nueva.
+// Si el nombre ya existe → error de redeclaración.
 bool Semantico::declareVariable(const std::string& name, TokenType type)
 {
-    auto& current_scope = scopeStack.back();
-    if (current_scope.find(name) != current_scope.end())
+    if (symbols.count(name))
     {
         errors.push_back("ERROR SEMANTICO: la variable '" + name +
-            "' ya fue declarada en este bloque.");
+            "' ya fue declarada anteriormente.");
         return false;
     }
-    current_scope[name] = { type, (int)scopeStack.size() - 1, false };
+    symbols[name] = { type, false };
     log.push_back("Variable '" + name + "' registrada como " +
         tokenTypeToString(type) + ".");
     return true;
 }
 
-// Busca la variable desde el scope más interno hacia afuera
+// Comprueba si una variable fue declarada.
 bool Semantico::isDeclared(const std::string& name)
 {
-    for (int i = (int)scopeStack.size() - 1; i >= 0; i--)
-        if (scopeStack[i].count(name)) return true;
-    return false;
+    return symbols.count(name) > 0;
 }
 
-// Obtiene el tipo de una variable ya declarada
+// Devuelve el tipo de una variable ya declarada.
 TokenType Semantico::getType(const std::string& name)
 {
-    for (int i = (int)scopeStack.size() - 1; i >= 0; i--)
-        if (scopeStack[i].count(name))
-            return scopeStack[i][name].type;
+    if (symbols.count(name)) return symbols[name].type;
     return TK_UNKNOWN;
 }
 
-// Marca una variable como inicializada (recibió un valor)
+// Marca una variable como inicializada.
 void Semantico::markInitialized(const std::string& name)
 {
-    for (int i = (int)scopeStack.size() - 1; i >= 0; i--)
-        if (scopeStack[i].count(name))
-        {
-            scopeStack[i][name].initialized = true;
-            return;
-        }
+    if (symbols.count(name))
+        symbols[name].initialized = true;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -174,12 +150,11 @@ void Semantico::analyzeStatement()
         return;
     }
 
-    // Token inesperado: consumir y seguir
     consume();
     synchronize();
 }
 
-// ── Declaración: string/double IDENTIFIER (= expr)? ; ────────────
+// ── TYPE IDENTIFIER (= expr)? ; ──────────────────────────────────
 void Semantico::analyzeVarDecl(TokenType typeToken)
 {
     consume(); // consume el tipo
@@ -196,23 +171,19 @@ void Semantico::analyzeVarDecl(TokenType typeToken)
 
         if (exprType != TK_UNKNOWN && exprType != typeToken)
         {
-            std::string esperado = (typeToken == TK_STRING) ? "string" : "double";
-            std::string recibido = (exprType == TK_STRING) ? "string" : "double";
-            errors.push_back("ERROR SEMANTICO: tipo incompatible al inicializar '"
-                + varName + "' — se esperaba " + esperado
-                + " pero la expresion es " + recibido + ".");
+            std::string esp = (typeToken == TK_STRING) ? "string" : "double";
+            std::string rec = (exprType == TK_STRING) ? "string" : "double";
+            errors.push_back("ERROR SEMANTICO: tipo incompatible al inicializar '" +
+                varName + "' — se esperaba " + esp + " pero la expresion es " + rec + ".");
         }
         else
-        {
             markInitialized(varName);
-            log.push_back("Variable '" + varName + "' inicializada correctamente.");
-        }
     }
 
     match(TK_SEMICOLON);
 }
 
-// ── Asignación: IDENTIFIER = expr ; ──────────────────────────────
+// ── IDENTIFIER = expr ; ──────────────────────────────────────────
 void Semantico::analyzeAssignment()
 {
     std::string varName = current().value;
@@ -234,14 +205,11 @@ void Semantico::analyzeAssignment()
     {
         std::string vt = (varType == TK_STRING) ? "string" : "double";
         std::string et = (exprType == TK_STRING) ? "string" : "double";
-        errors.push_back("ERROR SEMANTICO: no se puede asignar un valor " + et +
-            " a la variable '" + varName + "' que es " + vt + ".");
+        errors.push_back("ERROR SEMANTICO: no se puede asignar " + et +
+            " a '" + varName + "' que es " + vt + ".");
     }
     else
-    {
         markInitialized(varName);
-        log.push_back("Asignacion a '" + varName + "' verificada.");
-    }
 
     match(TK_SEMICOLON);
 }
@@ -255,7 +223,6 @@ void Semantico::analyzeIfStmt()
     match(TK_RPAREN);
 
     if (check(TK_LBRACE)) analyzeBlock();
-
     if (match(TK_ELSE))
         if (check(TK_LBRACE)) analyzeBlock();
 
@@ -268,7 +235,6 @@ void Semantico::analyzeForStmt()
     consume(); // for
     match(TK_LPAREN);
 
-    // Inicialización
     Token t = current();
     if (t.type == TK_STRING || t.type == TK_DOUBLE)
         analyzeVarDecl(t.type);
@@ -277,11 +243,9 @@ void Semantico::analyzeForStmt()
     else
         synchronize();
 
-    // Condición
     analyzeExpr();
     match(TK_SEMICOLON);
 
-    // Incremento: IDENTIFIER = expr
     if (check(TK_IDENTIFIER))
     {
         std::string varName = current().value;
@@ -306,29 +270,27 @@ void Semantico::analyzeMostrarStmt()
 {
     consume(); // mostrar / print
     match(TK_LPAREN);
-    analyzeExpr(); // acepta cualquier tipo
+    analyzeExpr();
     match(TK_RPAREN);
     match(TK_SEMICOLON);
     log.push_back("Sentencia mostrar/print verificada.");
 }
 
 // ── { statement* } ───────────────────────────────────────────────
+// Sin scopes: solo recorre las sentencias internas, sin abrir ni
+// cerrar ningún nivel en la tabla de símbolos.
 void Semantico::analyzeBlock()
 {
-    pushScope();
     consume(); // {
     while (!isAtEnd() && !check(TK_RBRACE))
         analyzeStatement();
     match(TK_RBRACE);
-    popScope();
     log.push_back("Bloque verificado.");
 }
 
 // ════════════════════════════════════════════════════════════════
-//  EXPRESIONES  —  cada método devuelve el tipo del resultado
+//  EXPRESIONES
 // ════════════════════════════════════════════════════════════════
-
-// Nivel 0: == y !=
 TokenType Semantico::analyzeExpr()
 {
     TokenType left = analyzeComparison();
@@ -338,18 +300,15 @@ TokenType Semantico::analyzeExpr()
         consume();
         TokenType right = analyzeComparison();
 
-        if (left != TK_UNKNOWN &&
-            right != TK_UNKNOWN &&
-            left != right)
-            errors.push_back("ERROR SEMANTICO: comparacion de igualdad "
-                "entre tipos distintos (string y double).");
+        if (left != TK_UNKNOWN && right != TK_UNKNOWN && left != right)
+            errors.push_back("ERROR SEMANTICO: comparacion entre "
+                "tipos distintos (string y double).");
 
-        left = TK_DOUBLE; // el resultado de == o != es siempre un booleano (double)
+        left = TK_DOUBLE;
     }
     return left;
 }
 
-// Nivel 1: < > <= >=
 TokenType Semantico::analyzeComparison()
 {
     TokenType left = analyzeTerm();
@@ -361,7 +320,7 @@ TokenType Semantico::analyzeComparison()
         TokenType right = analyzeTerm();
 
         if (left == TK_STRING || right == TK_STRING)
-            errors.push_back("ERROR SEMANTICO: los operadores '<' '>' '<=' '>=' "
+            errors.push_back("ERROR SEMANTICO: los operadores relacionales "
                 "no se pueden usar con strings.");
 
         left = TK_DOUBLE;
@@ -369,7 +328,6 @@ TokenType Semantico::analyzeComparison()
     return left;
 }
 
-// Nivel 2: + y -
 TokenType Semantico::analyzeTerm()
 {
     TokenType left = analyzeFactor();
@@ -383,8 +341,8 @@ TokenType Semantico::analyzeTerm()
         if (op.type == TK_MINUS &&
             (left == TK_STRING || right == TK_STRING))
         {
-            errors.push_back("ERROR SEMANTICO: el operador '-' "
-                "no se puede usar con strings.");
+            errors.push_back("ERROR SEMANTICO: '-' no se puede "
+                "usar con strings.");
             left = TK_UNKNOWN;
         }
         else if (op.type == TK_SUMA &&
@@ -393,21 +351,16 @@ TokenType Semantico::analyzeTerm()
             left != right)
         {
             errors.push_back("ERROR SEMANTICO: no se puede sumar "
-                "un string y un double.");
+                "string y double.");
             left = TK_UNKNOWN;
         }
         else
-        {
-            // string + string → string (concatenación)
-            // double + double → double
             left = (left == TK_STRING && right == TK_STRING)
-                ? TK_STRING : TK_DOUBLE;
-        }
+            ? TK_STRING : TK_DOUBLE;
     }
     return left;
 }
 
-// Nivel 3: * y /
 TokenType Semantico::analyzeFactor()
 {
     TokenType left = analyzeUnary();
@@ -418,15 +371,14 @@ TokenType Semantico::analyzeFactor()
         TokenType right = analyzeUnary();
 
         if (left == TK_STRING || right == TK_STRING)
-            errors.push_back("ERROR SEMANTICO: '*' y '/' "
-                "no se pueden usar con strings.");
+            errors.push_back("ERROR SEMANTICO: '*' y '/' no se "
+                "pueden usar con strings.");
 
         left = TK_DOUBLE;
     }
     return left;
 }
 
-// Nivel 4: ! y - (unario)
 TokenType Semantico::analyzeUnary()
 {
     if (check(TK_EXCLAMATION) || check(TK_MINUS))
@@ -436,15 +388,14 @@ TokenType Semantico::analyzeUnary()
         TokenType t = analyzeUnary();
 
         if (op.type == TK_MINUS && t == TK_STRING)
-            errors.push_back("ERROR SEMANTICO: el operador '-' unario "
-                "no se puede aplicar a un string.");
+            errors.push_back("ERROR SEMANTICO: '-' unario no se "
+                "puede aplicar a un string.");
 
         return TK_DOUBLE;
     }
     return analyzePrimary();
 }
 
-// Nivel 5: valores atómicos
 TokenType Semantico::analyzePrimary()
 {
     Token t = current();

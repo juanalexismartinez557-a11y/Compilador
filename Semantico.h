@@ -4,11 +4,9 @@
 #include <map>
 #include "Token.h"
 
-// Información que se guarda por cada variable en la tabla de símbolos
 struct SymbolInfo {
-    TokenType type;       // TK_STRING o TK_DOUBLE
-    int       scopeLevel; // en qué nivel de anidamiento fue declarada
-    bool      initialized;// si ya recibió un valor
+    TokenType type;        // TK_STRING o TK_DOUBLE
+    bool      initialized; // si ya recibió un valor
 };
 
 class Semantico {
@@ -23,10 +21,10 @@ private:
     std::vector<Token> tokens;
     int pos;
 
-    // Tabla de símbolos: pila de scopes, cada uno es un mapa nombre→info
-    std::vector<std::map<std::string, SymbolInfo>> scopeStack;
+    // Tabla de símbolos plana — todas las variables viven aquí
+    std::map<std::string, SymbolInfo> symbols;
 
-    // ── Navegación (igual que el parser) ──────────────────────────
+    // ── Navegación ────────────────────────────────────────────────
     Token current();
     Token peek(int offset = 0);
     Token consume();
@@ -36,14 +34,12 @@ private:
     void  synchronize();
 
     // ── Tabla de símbolos ─────────────────────────────────────────
-    void      pushScope();
-    void      popScope();
     bool      declareVariable(const std::string& name, TokenType type);
     bool      isDeclared(const std::string& name);
     TokenType getType(const std::string& name);
     void      markInitialized(const std::string& name);
 
-    // ── Análisis de sentencias ────────────────────────────────────
+    // ── Sentencias ────────────────────────────────────────────────
     void analyzeProgram();
     void analyzeStatement();
     void analyzeVarDecl(TokenType typeToken);
@@ -53,7 +49,7 @@ private:
     void analyzeMostrarStmt();
     void analyzeBlock();
 
-    // ── Análisis de expresiones (devuelven el tipo resultante) ────
+    // ── Expresiones ───────────────────────────────────────────────
     TokenType analyzeExpr();
     TokenType analyzeComparison();
     TokenType analyzeTerm();
